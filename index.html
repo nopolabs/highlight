@@ -78,22 +78,31 @@
       enableStyle(style);
     }
 
-    function copyOutputToClipboard() {
+    function copyHtmlToClipboard() {
       const output = document.getElementById('output');
-      output.select();
-      document.execCommand("copy");
+      navigator.clipboard.writeText(output.value);
+    }
+
+    function copyLinkToClipboard() {
+      for (let link of document.querySelectorAll('.codestyle')) {
+        if (!link.disabled) {
+          navigator.clipboard.writeText(link.outerHTML);
+        }
+      }
     }
 
     function init() {
       const form = document.getElementById('form');
-      const format = document.getElementById('format');
-      const copy = document.getElementById('copy');
+      const formatButton = document.getElementById('format');
+      const copyHtmlButton = document.getElementById('copyHtml');
+      const copyLinkButton = document.getElementById('copyLink');
       const selectLanguages = document.getElementById('languages');
       const selectStyles = document.getElementById('styles');
 
       form.onsubmit = ev => ev.preventDefault();
-      format.addEventListener("click", format)
-      copy.addEventListener("click", copyOutputToClipboard)
+      formatButton.addEventListener("click", format)
+      copyHtmlButton.addEventListener("click", copyHtmlToClipboard)
+      copyLinkButton.addEventListener("click", copyLinkToClipboard)
       addOptions(selectLanguages, getLanguages());
       addOptions(selectStyles, getStyles());
     }
@@ -107,9 +116,17 @@
 <body>
 
 <p>
-  <a href="https://highlightjs.org/usage/">https://highlightjs.org/usage/</a>
+  This page uses <a href="https://highlightjs.org">highlight.js</a>
+  to format code to html with syntax highlighting.
 </p>
-
+<p>
+  If you have a webpage that can execute javascript, either in the browser or on the server
+  it is possible to use highlight.js directly, see <a href="https://highlightjs.org/usage/">usage</a>.
+</p>
+<p>
+  The problem this page tries to solve is: how to display code with syntax highlighting
+  on a static web page, using only html and css.
+</p>
 <form id="form">
   <p>
     <label><textarea id="input" cols="80" rows="10"></textarea></label>
@@ -123,7 +140,8 @@
     <label><textarea id="output" cols="80" rows="10"></textarea></label>
   </p>
   <p>
-    <button id="copy">Copy</button>
+    <button id="copyHtml">Copy HTML</button>
+    <button id="copyLink">Copy Link</button>
   </p>
 </form>
 
