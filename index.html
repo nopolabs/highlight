@@ -78,9 +78,36 @@
       enableStyle(style);
     }
 
+    function fetchStyle(href) {
+      return fetch(href)
+              .then(response => response.text())
+              .then(css => `<style>\n/* ${href} */\n${css}\n</style>`);
+    }
+
+    function copyStyleToClipboard() {
+      getHighlightStyleLinks().forEach(function (link) {
+        if (!link.disabled) {
+          fetchStyle(link.href)
+                  .then(style => navigator.clipboard.writeText(style));
+        }
+      });
+    }
+
     function copyHtmlToClipboard() {
       const output = document.getElementById('output');
       navigator.clipboard.writeText(output.value);
+    }
+
+    function copyHtmlWithStyleToClipboard() {
+      const output = document.getElementById('output');
+      const html = output.value;
+      getHighlightStyleLinks().forEach(function (link) {
+        if (!link.disabled) {
+          fetchStyle(link.href)
+                  .then(style => `${style}\n${html}`)
+                  .then(htmlWithStyle => navigator.clipboard.writeText(htmlWithStyle));
+        }
+      });
     }
 
     function copyLinkToClipboard() {
@@ -91,38 +118,28 @@
       });
     }
 
-    function copyHtmlWithStyleToClipboard() {
-      const output = document.getElementById('output');
-      const html = output.value;
-      getHighlightStyleLinks().forEach(function (link) {
-        if (!link.disabled) {
-          fetch(link.href)
-                  .then(response => response.text())
-                  .then(css => `<style>\n/* ${link.href} */\n${css}\n</style>\n${html}`)
-                  .then(htmlWithStyle => navigator.clipboard.writeText(htmlWithStyle));
-        }
-      });
-    }
-
-    function init() {
+    function init(selectedLanguage, selectedStyle) {
       const form = document.getElementById('form');
       const formatButton = document.getElementById('format');
-      const copyHtmlWithStyleButton = document.getElementById('copyHtmlWithStyle');
+      const copyStyleButton = document.getElementById('copyStyle');
       const copyHtmlButton = document.getElementById('copyHtml');
+      const copyHtmlWithStyleButton = document.getElementById('copyHtmlWithStyle');
       const copyLinkButton = document.getElementById('copyLink');
       const selectLanguages = document.getElementById('languages');
       const selectStyles = document.getElementById('styles');
 
       form.onsubmit = ev => ev.preventDefault();
       formatButton.addEventListener("click", format)
-      copyHtmlWithStyleButton.addEventListener("click", copyHtmlWithStyleToClipboard)
+      copyStyleButton.addEventListener("click", copyStyleToClipboard)
       copyHtmlButton.addEventListener("click", copyHtmlToClipboard)
+      copyHtmlWithStyleButton.addEventListener("click", copyHtmlWithStyleToClipboard)
       copyLinkButton.addEventListener("click", copyLinkToClipboard)
-      addOptions(selectLanguages, getLanguages(), "javascript");
-      addOptions(selectStyles, getStyles(), "solarized-dark");
+
+      addOptions(selectLanguages, getLanguages(), selectedLanguage);
+      addOptions(selectStyles, getStyles(), selectedStyle);
     }
 
-    window.onload = init;
+    window.onload = () => init("javascript", "solarized-dark");
   </script>
 
   <title>Highlight</title>
@@ -152,8 +169,9 @@
     <button id="format">format</button>
   </p>
   <p>
-    <button id="copyHtmlWithStyle">Copy HTML w/&lt;style&gt;</button>
+    <button id="copyStyle">Copy &lt;style&gt;</button>
     <button id="copyHtml">Copy HTML</button>
+    <button id="copyHtmlWithStyle">Copy HTML w/&lt;style&gt;</button>
     <button id="copyLink">Copy Link</button>
   </p>
   <p>
